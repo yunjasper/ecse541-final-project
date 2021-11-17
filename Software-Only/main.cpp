@@ -24,9 +24,8 @@
 #include <fstream> 
 
 // global variables to store defaults, initialized to defaults
-unsigned int addrC = ADDR_C;
+unsigned int addrL = ADDR_L;
 unsigned int addrA = ADDR_A;
-unsigned int addrB = ADDR_B;
 unsigned int matrix_size = MATRIX_SIZE; // matrix is (size x size) elements
 unsigned int loops = LOOPS;
 unsigned int mem_size = MEM_SIZE;
@@ -48,47 +47,40 @@ int sc_main(int argc, char* argv[])
     debug_log_file << "Software-Hardware Partitioned Matrix-Matrix Multiplication" << endl;
 
     // check CLI arguments
-    if (argc != 2 && argc != 5 && argc != 6 && argc != 7)
+    if (argc != 2 && argc != 4 && argc != 5 && argc != 6)
     {
-        cerr << "Usage: " << argv[0] << " <filename> [[[addrC addrA addrB] size] loops]" << endl;
-        debug_log_file << "Usage: " << argv[0] << " <filename> [[[addrC addrA addrB] size] loops]" << endl;
+        cerr << "Usage: " << argv[0] << " <filename> [[[addrL addrA] size] loops]" << endl;
+        debug_log_file << "Usage: " << argv[0] << " <filename> [[[addrL addrA] size] loops]" << endl;
         return -1;
     }
 
     // set custom parameters
-    if (argc >= 5)
+    if (argc >= 4)
     {
-        addrC = stoi(argv[2]);
+        addrL = stoi(argv[2]);
         addrA = stoi(argv[3]);
-        addrB = stoi(argv[4]);
 
-        if (argc == 6)
-            matrix_size = stoi(argv[5]);
+        if (argc == 5)
+            matrix_size = stoi(argv[4]);
         
-        if (argc == 7)
-            loops = stoi(argv[6]);
+        if (argc == 6)
+            matrix_size = stoi(argv[4]);
+            loops = stoi(argv[5]);
     }
 
     // determine minimum memory size
-    mem_size = matrix_size * matrix_size * loops + addrC + 2; // +2 to avoid dumb out of bounds problems
+    mem_size = matrix_size * matrix_size * loops + addrL + 2; // +2 to avoid dumb out of bounds problems
 
-    cout << "addrA = " << addrA << ", addrB = " << addrB << ", addrC = " << addrC << endl;
+    cout << "addrA = " << addrA << ", addrL = " << addrL << endl;
     cout << "matrix_size = " << matrix_size << ", loops = " << loops  << ", mem_size = " << mem_size << endl;
-    debug_log_file << "addrA = " << addrA << ", addrB = " << addrB << ", addrC = " << addrC << endl;
+    debug_log_file << "addrA = " << addrA << ", addrL = " << addrL << endl;
     debug_log_file << "matrix_size = " << matrix_size << ", loops = " << loops  << ", mem_size = " << mem_size << endl;
 
     // check addresses against memory size
-    if (addrA + matrix_size * matrix_size * loops > addrB)
+    if (addrA + matrix_size * matrix_size * loops > addrL)
     {
-        cerr << "*** ERROR in main: addrA + matrix_size  > addrB" << endl;
-        debug_log_file << "*** ERROR in main: addrA + matrix_size  > addrB" << endl;
-        return -1;
-    }
-
-    if (addrB + matrix_size * matrix_size * loops > addrC) 
-    {
-        cerr << "*** ERROR in main: addrB + matrix_size > addrC" << endl;
-        debug_log_file << "*** ERROR in main: addrA + matrix_size  > addrB" << endl;
+        cerr << "*** ERROR in main: addrA + matrix_size  > addrL" << endl;
+        debug_log_file << "*** ERROR in main: addrA + matrix_size  > addrL" << endl;
         return -1;
     }
 
@@ -136,7 +128,7 @@ int sc_main(int argc, char* argv[])
     double end_time = sc_time_stamp().to_seconds() * 1e9;
     cout << "[main] final simulation time: " << end_time << " ns" << endl;
     cout << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
-    cout << "[main] final memory contents at addrC of each loop printed to log_sw_only.txt." << endl;
+    cout << "[main] final memory contents at addrL of each loop printed to log_sw_only.txt." << endl;
     cout << "[main] software total cycles counted = " << software_cycles << endl;
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
@@ -144,8 +136,8 @@ int sc_main(int argc, char* argv[])
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
     {
-        debug_log_file << endl << "C matrix for loop = " << i << endl;
-        mem1.print_memory_log(ADDR_MEM_MEM + addrC + i * matrix_size * matrix_size, ADDR_MEM_MEM + addrC + (i + 1) * matrix_size * matrix_size);
+        debug_log_file << endl << "L matrix for loop = " << i << endl;
+        mem1.print_memory_log(ADDR_MEM_MEM + addrL + i * matrix_size * matrix_size, ADDR_MEM_MEM + addrL + (i + 1) * matrix_size * matrix_size);
     }
     
     debug_log_file.close();

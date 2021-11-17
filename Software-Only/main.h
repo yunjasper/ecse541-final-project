@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <math.h>
+
 #define CLOCK_PERIOD sc_time(6.67, SC_NS) // ns, 150 MHz
 
 // Op values
@@ -36,8 +38,7 @@
 
 // Addresses of matrices in memory
 #define ADDR_A          0               // Matrix A address
-#define ADDR_B          5000            // Matrix B address
-#define ADDR_C          10000           // Matrix C address
+#define ADDR_L          10000           // Matrix L address
 #define MEM_SIZE        5000000         // some base default size if none specified
 
 // addresses of memory-mapped components (hardware and software!) 

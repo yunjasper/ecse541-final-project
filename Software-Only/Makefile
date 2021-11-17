@@ -1,11 +1,17 @@
-SYSTEMC_HOME=/home/jyun6/Desktop/systemc-2.3.3
+CC=g++
+CFLAGS=-g3
+IFLAGS=-I$$SYSTEMC/include
+LFLAGS=-L$$SYSTEMC/lib-linux64 -lsystemc -lm
+DEPS=main.cpp sw_component.cpp
+OBJS=main.o sw_component.o
 
-FILES= main.cpp sw_component.cpp
+%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(IFLAGS) $(LFLAGS)
 
-make:
-	g++ -g3 -Wall -Wextra -std=c++11 -I. -I$(SYSTEMC_HOME)/include -L. -L$(SYSTEMC_HOME)/lib-linux64 $(FILES) -o mm -lsystemc -lm
+mm: $(OBJS)
+	$(CC) -o $@ $^ $(CFLAGS) $(IFLAGS) $(LFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -f $(OBJS) main
+	rm -f $(OBJS) mm

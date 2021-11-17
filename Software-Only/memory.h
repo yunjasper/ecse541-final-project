@@ -23,9 +23,8 @@
 #include <vector> // for dynamic memory array size
 
 // get global variables from main.cpp
-extern unsigned int addrC;
+extern unsigned int addrL;
 extern unsigned int addrA;
-extern unsigned int addrB;
 extern unsigned int mem_size;
 extern unsigned int matrix_size;
 extern unsigned int loops;
@@ -39,7 +38,7 @@ class Memory: public sc_module
         sc_in<sc_logic> Clk;            // clock signal
         sc_port<bus_minion_if> if_bus;  // port to shared bus (memory is always minion)
         
-        vector<unsigned int> memData; // empty, no elements
+        vector<double> memData; // empty, no elements
         unsigned int req_addr, req_op, req_len; // received bus request details
         
         // thread for memory
@@ -99,7 +98,7 @@ class Memory: public sc_module
                     {
                         for (unsigned int i = 0; i < req_len; i++)
                         {
-                            unsigned int data;
+                            double data;
                             if_bus->ReceiveWriteData(data);
                             memData[req_addr - ADDR_MEM_MEM + i] = data;
                             #ifdef DEBUG_MEM
@@ -179,37 +178,6 @@ class Memory: public sc_module
             #ifdef DEBUG_MEM
             cout << "[Memory] Success! Initialized memory" << endl;
             #endif
-
-            for (unsigned int n = 0; n < loops; n++)
-            {
-                // now restructure array B as column major to support burst read of columns
-                //      1. copy B into new array in column major format
-                //      2. put reformatted copy into memory
-                unsigned int B_col_major[matrix_size * matrix_size] = {};
-                unsigned int B_row_major[matrix_size * matrix_size] = {};
-
-                unsigned int addr_offset_loop = n * matrix_size * matrix_size;
-                // copy B into new array
-                for (unsigned int i = 0; i < matrix_size * matrix_size; i++)
-                {
-                    B_col_major[i] = memData[addrB + i + addr_offset_loop];
-                    B_row_major[i] = memData[addrB + i + addr_offset_loop];
-                }
-
-                // debug_log_file << "past copy" << endl;
-                // take transpose to transform from row major to column major
-                for (unsigned int i = 0; i < matrix_size; i++)
-                {
-                    for (unsigned int j = 0; j < matrix_size; j++)
-                    {
-                        B_col_major[j * matrix_size + i] = B_row_major[i * matrix_size + j];
-                    }
-                }
-
-                // write column major form into memory
-                for (unsigned int i = 0; i < matrix_size * matrix_size; i++)
-                    memData[addrB + i + addr_offset_loop] = B_col_major[i];
-            }
             
             // register do_memory() as process and make sensitive to clock changes
             SC_THREAD(do_memory);
@@ -219,7 +187,7 @@ class Memory: public sc_module
             cout << "[Memory] Exiting memory initialization constructor" << endl;
             debug_log_file << "[Memory] Exiting memory initialization constructor" << endl;
             cout << "[Memory] State of memory now:" << endl;
-            print_memory(ADDR_MEM_MEM + addrA, ADDR_MEM_MEM + addrC + matrix_size);
+            print_memory(ADDR_MEM_MEM + addrA, ADDR_MEM_MEM + addrL + matrix_size);
             #endif
         }
 

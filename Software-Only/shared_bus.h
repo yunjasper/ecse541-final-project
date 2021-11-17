@@ -52,7 +52,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         unsigned int len_data_received; // for WriteData()
         
         sc_in<sc_logic> Clk; // clock signal input
-        queue<unsigned int> data_queue; // stores data from minions/masters
+        queue<double> data_queue; // stores data from minions/masters
 
         // constructor
         SC_HAS_PROCESS(Shared_bus);
@@ -228,7 +228,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
          * @param data pointer to data
          * @return void
          */
-        void ReadData(unsigned int &data)
+        void ReadData(double &data)
         {
             wait(Clk.posedge_event()); // wait 2 full clock cycles
             wait(Clk.posedge_event());
@@ -269,7 +269,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
          * @param data data to write
          * @return void
          */
-        void WriteData(unsigned int data)
+        void WriteData(double data)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
             software_cycles++;
@@ -333,7 +333,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         /**
          * Puts data into FIFO queue to be sent back to master.
          */
-        void SendReadData(unsigned int data)
+        void SendReadData(double data)
         {
             wait(Clk.posedge_event()); // wait 2 full clock cycles
             wait(Clk.posedge_event());
@@ -350,7 +350,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         /**
          * Gets data from FIFO queue from master device to be sent to minion.
          */
-        void ReceiveWriteData(unsigned int &data)
+        void ReceiveWriteData(double &data)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
             

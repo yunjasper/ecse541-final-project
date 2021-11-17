@@ -30,7 +30,7 @@ class Sw_component : public sc_module
 
         Sw_component(sc_module_name name); // constructor
         void do_sw_component();
-        void sw_master_write_data(unsigned int addr, unsigned int data);
-        void sw_master_read_data(unsigned int addr, std::vector<unsigned int>& reg);
-        void sw_master_read_data(unsigned int addr, unsigned int& datum);
+        void sw_master_write_data(unsigned int addr, double data);
+        void sw_master_read_data(unsigned int addr, std::vector<double>& reg);
+        void sw_master_read_data(unsigned int addr, double& datum);
 };

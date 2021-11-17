@@ -20,9 +20,8 @@
 using namespace std;
 
 // get global variables from main.cpp
-extern unsigned int addrC;
+extern unsigned int addrL;
 extern unsigned int addrA;
-extern unsigned int addrB;
 extern unsigned int matrix_size;
 extern unsigned int loops;
 extern volatile unsigned int software_cycles;
@@ -55,13 +54,13 @@ void Sw_component::do_sw_component()
 
         // initialize output region to zero
         #ifdef DEBUG_SW
-        cout << "[Sw_component] Requesting : MST_ID = " << MST_ID_SW << ", ADDR = " << ADDR_MEM_MEM + addrC <<", OP = OP_WRITE, len = " << matrix_size * matrix_size << endl;
-        debug_log_file << "[Sw_component] Requesting : MST_ID = " << MST_ID_SW << ", ADDR = " << ADDR_MEM_MEM + addrC <<", OP = OP_WRITE, len = " << matrix_size * matrix_size << endl;
+        cout << "[Sw_component] Requesting : MST_ID = " << MST_ID_SW << ", ADDR = " << ADDR_MEM_MEM + addrL <<", OP = OP_WRITE, len = " << matrix_size * matrix_size << endl;
+        debug_log_file << "[Sw_component] Requesting : MST_ID = " << MST_ID_SW << ", ADDR = " << ADDR_MEM_MEM + addrL <<", OP = OP_WRITE, len = " << matrix_size * matrix_size << endl;
         #endif
         wait(DELAY_SW_ADD * 2); wait(DELAY_SW_MUL * 3);
         software_cycles += 20;
 
-        if_bus->Request(MST_ID_SW, ADDR_MEM_MEM + addrC + n * matrix_size * matrix_size, OP_WRITE, matrix_size * matrix_size); // one transaction
+        if_bus->Request(MST_ID_SW, ADDR_MEM_MEM + addrL + n * matrix_size * matrix_size, OP_WRITE, matrix_size * matrix_size); // one transaction
         
         while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) // will wait until ack signal is received
         {
@@ -96,54 +95,70 @@ void Sw_component::do_sw_component()
 
         // vector<unsigned int> reg_A(matrix_size, 0); // size matrix_size, init to 0
         // vector<unsigned int> reg_B(matrix_size, 0); // in actual hardware, would be registers with fixed size that do not need init to zero
-        unsigned int reg_A, reg_B, reg_C;
+        double L_jj, A_jj, L_ij, A_ij, A_ik, L_ik, L_kj;
 
-        wait(DELAY_SW_ADD); // i = 0
+        wait(DELAY_SW_ADD); wait(DELAY_SW_MUL * 2); // add, 2 muls (mul is 2 operands only)
+        software_cycles += 13;
+        unsigned int base_mem_addr_loop = ADDR_MEM_MEM + n * matrix_size * matrix_size;
+
+        wait(DELAY_SW_ADD); // j = 0
         software_cycles++;
-        for (i = 0; i < matrix_size; i++) // row number -- execs: matrix_size * loops, iters: matrix_size
+        for (j = 0; j < matrix_size; j++) // row number -- execs: matrix_size * loops, iters: matrix_size
         {
-            wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // i++, compare
+            wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // j++, compare
             software_cycles += 2;
+
+            sw_master_read_data(base_mem_addr_loop + addrA + j * matrix_size + j, A_jj);
+            L_jj = sqrt(A_jj);
+
+            sw_master_write_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
             
-            wait(DELAY_SW_ADD); // j = 0
+            wait(DELAY_SW_ADD); // i = 0
             software_cycles++;
-            for (j = 0; j < matrix_size; j++) // column number -- execs: matrix_size * matrix_size * loops, iters: matrix_size
+            for (i = j+1; i < matrix_size; i++) // column number -- execs: matrix_size * matrix_size * loops, iters: matrix_size
             {
-                wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // j++, compare
+                wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // i++, compare
                 software_cycles += 2;
 
+                wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                software_cycles += 9;
+                sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + j, A_ij);
+
+                wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                software_cycles += 9;
+                sw_master_read_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
+
+                // Anotate this!!
+                L_ij = A_ij / L_jj;
+
+                wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                software_cycles += 9;
+                sw_master_write_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
+
                 wait(DELAY_SW_ADD); // k = 0
-                for (k = 0; k < matrix_size; k++)
+                for (k = j+1; k <= i; k++)
                 {
                     wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // k++, compare
+                    software_cycles += 2;
+
+                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                    software_cycles += 9;
+                    sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
+
+                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                    software_cycles += 9;
+                    sw_master_read_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
+
+                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                    software_cycles += 9;
+                    sw_master_read_data(base_mem_addr_loop + addrL + k * matrix_size + j, L_kj);
                     
-                    wait(DELAY_SW_ADD); wait(DELAY_SW_MUL * 2); // add, 2 muls (mul is 2 operands only)
-                    software_cycles += 13;
-                    unsigned int base_mem_addr_loop = ADDR_MEM_MEM + n * matrix_size * matrix_size;
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, reg_A);
+                    // Anotate this!
+                    A_ik = A_ik - L_ij * L_kj;
                     
                     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
                     software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrB + j * matrix_size + k, reg_B);
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrC + i * matrix_size + j, reg_C);
-
-                    wait(DELAY_SW_MUL); // multiply
-                    software_cycles += 6;
-                    unsigned int temp = reg_A * reg_B;
-                    
-                    wait(DELAY_SW_ADD);
-                    software_cycles++;
-                    reg_C += temp;
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_write_data(base_mem_addr_loop + addrC + (i * matrix_size + j), reg_C);
+                    sw_master_write_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
                 }
             }
         }
@@ -165,7 +180,7 @@ Sw_component::Sw_component(sc_module_name name) : sc_module(name)
 /**
  * Wrapper for writing datum onto bus.
  */ 
-void Sw_component::sw_master_write_data(unsigned int addr, unsigned int data)
+void Sw_component::sw_master_write_data(unsigned int addr, double data)
 {
     if_bus->Request(MST_ID_SW, addr, OP_WRITE, 1);
     while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) 
@@ -179,7 +194,7 @@ void Sw_component::sw_master_write_data(unsigned int addr, unsigned int data)
 /**
  * Wrapper for reading datum off bus.
  */
-void Sw_component::sw_master_read_data(unsigned int addr, unsigned int& datum)
+void Sw_component::sw_master_read_data(unsigned int addr, double& datum)
 {
     // request and wait
     #ifdef DEBUG_SW
@@ -210,7 +225,7 @@ void Sw_component::sw_master_read_data(unsigned int addr, unsigned int& datum)
 /**
  * Wrapper for reading data off bus.
  */
-void Sw_component::sw_master_read_data(unsigned int addr, vector<unsigned int>& reg)
+void Sw_component::sw_master_read_data(unsigned int addr, vector<double>& reg)
 {
     // request and wait
     #ifdef DEBUG_SW
@@ -229,7 +244,7 @@ void Sw_component::sw_master_read_data(unsigned int addr, vector<unsigned int>& 
     
     for (unsigned int i = 0; i < matrix_size; i++ )
     {
-        unsigned int data = 0;
+        double data = 0;
         if_bus->ReadData(data);
         reg[i] = data;
 

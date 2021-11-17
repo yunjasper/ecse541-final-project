@@ -22,6 +22,6 @@ class bus_minion_if : virtual public sc_interface
     public:
         virtual void Listen(unsigned int &req_addr, unsigned int &req_op, unsigned int &req_len) = 0;
         virtual void Acknowledge() = 0;
-        virtual void SendReadData(unsigned int data) = 0;
-        virtual void ReceiveWriteData(unsigned int &data) = 0;
+        virtual void SendReadData(double data) = 0;
+        virtual void ReceiveWriteData(double &data) = 0;
 };
