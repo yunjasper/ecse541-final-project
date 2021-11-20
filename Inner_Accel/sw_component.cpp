@@ -135,31 +135,51 @@ void Sw_component::do_sw_component()
                 software_cycles += 9;
                 sw_master_write_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
 
-                wait(DELAY_SW_ADD); // k = 0
-                for (k = j+1; k <= i; k++)
+                if_bus->Request(MST_ID_SW, ADDR_MEM_HW, OP_CALC, 1); // waste of a clock cycle but prevent early release of bus
+                software_cycles += 2;
+                
+                while (!(if_bus->WaitForAcknowledge(MST_ID_SW)))
                 {
-                    wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // k++, compare
-                    software_cycles += 2;
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
-
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_read_data(base_mem_addr_loop + addrL + k * matrix_size + j, L_kj);
-                    
-                    // Anotate this!
-                    A_ik = A_ik - L_ij * L_kj;
-                    
-                    wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
-                    sw_master_write_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
+                    wait(Clk.posedge_event()); // needed otherwise loops forever here
+                    software_cycles++;
+                    #ifdef DEBUG_SW
+                    cout << "[Sw_component] Waiting for Acknowledge from hardware..." << endl;
+                    debug_log_file << "[Sw_component] Waiting for Acknowledge from hardware...i = " << i << ", j = " << j << endl;
+                    #endif
                 }
+                #ifdef DEBUG_SW
+                cout << "[Sw_component] Acknowledge received from hardware! i = " << i << ", j = " << j << endl;
+                debug_log_file << "[Sw_component] Acknowledge received from hardware! i = " << i << ", j = " << j << endl;
+                #endif
+                if_bus->WriteData(0); // dummy data
+
+                wait(CLOCK_PERIOD * 10000);
+
+                // wait(DELAY_SW_ADD); // k = 0
+                // for (k = j+1; k <= i; k++)
+                // {
+                //     wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // k++, compare
+                //     software_cycles += 2;
+
+                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                //     software_cycles += 9;
+                //     sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
+
+                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                //     software_cycles += 9;
+                //     sw_master_read_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
+
+                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                //     software_cycles += 9;
+                //     sw_master_read_data(base_mem_addr_loop + addrL + k * matrix_size + j, L_kj);
+                    
+                //     // Anotate this!
+                //     A_ik = A_ik - L_ij * L_kj;
+                    
+                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
+                //     software_cycles += 9;
+                //     sw_master_write_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
+                // }
             }
         }
     }

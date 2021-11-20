@@ -110,6 +110,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_master.addr = current_request.addr;
                     current_master.op = current_request.op;
                     current_master.len = current_request.len;
+                    current_master.indexing_mode = current_request.indexing_mode;
 
                     // setup counters for transactions
                     len_data_received = 0;
@@ -120,6 +121,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_request.addr = ADDR_BUS_IDLE;
                     current_request.op = OP_NONE;
                     current_request.len = LEN_BUS_IDLE;
+                    current_request.indexing_mode = INDEX_MODE_IDLE;
                 }
             
                 // check if transaction for current bus master is finished
@@ -130,6 +132,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_master.addr = ADDR_BUS_IDLE;
                     current_master.op = OP_NONE;
                     current_master.len = LEN_BUS_IDLE;
+                    current_master.indexing_mode = INDEX_MODE_IDLE;
                     
                     len_data_received = 0;
                     len_data_sent = 0;

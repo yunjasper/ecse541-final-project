@@ -1,19 +1,6 @@
 ECSE 541: MPSoC Design, HW2 -- Software Only
 Software-Hardware Partitioned Matrix-Matrix Multiplication
-addrA = 0, addrL = 700
-matrix_size = 5, loops = 3, mem_size = 777
-[Memory] Input file too long! Stopped.
+addrA = 0, addrL = 5000
+matrix_size = 5, loops = 1, mem_size = 5027
+[Memory] Input file too short! Initializing rest of memory to zero
 [main] Starting simulation! 
-[main] end of simulation
-[main] final simulation time: 41890.9 ns
-[main] total cycles: time / clock period = 6280.5
-[main] software total cycles counted = 6688
-
-L matrix for loop = 0
-143.524 0 0 0 0 155.201 72.1778 0 0 0 101.635 78.378 48.4998 0 0 104.074 73.8964 -13.3477 80.993 0 71.5911 20.4771 5.52359 6.07223 33.4967 
-
-L matrix for loop = 1
-135.178 0 0 0 0 60.3576 46.615 0 0 0 119.827 19.9828 90.8629 0 0 58.9668 43.7821 19.824 13.2307 0 101.466 46.2239 20.0725 34.1742 17.4679 
-
-L matrix for loop = 2
-158.613 0 0 0 0 100.881 92.6393 0 0 0 57.3598 -25.4375 42.6941 0 0 62.9205 31.2126 6.74239 70.1663 0 103.378 6.72689 40.9986 37.8819 71.1471 

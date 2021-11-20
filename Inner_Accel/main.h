@@ -32,8 +32,9 @@
 #define MST_ID_HW       2U              // hardware master
 
 // Indexing
-#define ROW_MJR         0U              // row-major indexing
-#define COL_MJR         1U              // column-major indexing
+#define INDEX_MODE_IDLE 0U
+#define ROW_MJR         1U              // row-major indexing
+#define COL_MJR         2U              // column-major indexing
 
 // parameters
 #define MATRIX_SIZE     6               // size of arrays (SIZE x SIZE)
