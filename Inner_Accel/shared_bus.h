@@ -31,6 +31,8 @@ struct request
     unsigned int op;
     unsigned int len;
     unsigned int indexing_mode;
+    unsigned int j_loop;
+    unsigned int i_loop;
 };
 
 extern ofstream debug_log_file;
@@ -67,11 +69,17 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
             current_master.addr = ADDR_BUS_IDLE;
             current_master.op = OP_NONE;
             current_master.len = LEN_BUS_IDLE;
+            current_master.indexing_mode = INDEX_MODE_IDLE;
+            current_master.j_loop = LOOP_IDLE;
+            current_master.i_loop - LOOP_IDLE;
 
             current_request.mst_id = BUS_IDLE_ID;
             current_request.addr = ADDR_BUS_IDLE;
             current_request.op = OP_NONE;
             current_request.len = LEN_BUS_IDLE;
+            current_request.indexing_mode = INDEX_MODE_IDLE;
+            current_request.j_loop = LOOP_IDLE;
+            current_request.i_loop = LOOP_IDLE;
         }
     
         void do_shared_bus()
@@ -111,6 +119,8 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_master.op = current_request.op;
                     current_master.len = current_request.len;
                     current_master.indexing_mode = current_request.indexing_mode;
+                    current_master.j_loop = current_request.j_loop;
+                    current_master.i_loop = current_request.i_loop;
 
                     // setup counters for transactions
                     len_data_received = 0;
@@ -122,6 +132,9 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_request.op = OP_NONE;
                     current_request.len = LEN_BUS_IDLE;
                     current_request.indexing_mode = INDEX_MODE_IDLE;
+                    current_request.j_loop = LOOP_IDLE;
+                    current_request.i_loop = LOOP_IDLE;
+                    
                 }
             
                 // check if transaction for current bus master is finished
@@ -133,6 +146,8 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                     current_master.op = OP_NONE;
                     current_master.len = LEN_BUS_IDLE;
                     current_master.indexing_mode = INDEX_MODE_IDLE;
+                    current_master.j_loop = LOOP_IDLE;
+                    current_master.i_loop - LOOP_IDLE;
                     
                     len_data_received = 0;
                     len_data_sent = 0;
@@ -166,7 +181,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
          * @param len length of data to be read/written
          * @return void
          */
-        void Request(unsigned int mst_id, unsigned int addr, unsigned int op, unsigned int len, unsigned int indexing_mode = ROW_MJR)
+        void Request(unsigned int mst_id, unsigned int addr, unsigned int op, unsigned int len, unsigned int indexing_mode, unsigned int j_loop, unsigned int i_loop)
         {
             #ifdef DEBUG_BUS
             cout << "[Shared_bus] Request() : Wait for two clock periods" << endl;
@@ -194,6 +209,8 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
             current_request.op = op;
             current_request.len = len;
             current_request.indexing_mode = indexing_mode;
+            current_request.j_loop = j_loop;
+            current_request.i_loop = i_loop;
 
             // debug info
             #ifdef DEBUG_BUS
@@ -303,7 +320,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         /**
          * Bus minion listens to the bus by getting the current state.
          */
-        void Listen(unsigned int &req_addr, unsigned int &req_op, unsigned int &req_len, unsigned int &req_indexing_mode)
+        void Listen(unsigned int &req_addr, unsigned int &req_op, unsigned int &req_len, unsigned int &req_indexing_mode, unsigned int &req_j_loop, unsigned int &req_i_loop)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
             // TODO: Listen() is a read instruction so need another clock wait?
@@ -313,6 +330,8 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
             req_op = current_master.op;
             req_len = current_master.len;
             req_indexing_mode = current_master.indexing_mode;
+            req_j_loop = current_master.j_loop;
+            req_i_loop = current_master.i_loop;
 
             #ifdef DEBUG_BUS
             cout << "[Shared_bus] Listen() : listening to bus master parameters: mst_id = " << current_master.mst_id << ", req_addr = " << current_master.addr << ", req_op = " << current_master.op << ", req_len = " << current_master.len;

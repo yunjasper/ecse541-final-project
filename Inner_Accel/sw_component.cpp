@@ -135,7 +135,7 @@ void Sw_component::do_sw_component()
                 software_cycles += 9;
                 sw_master_write_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
 
-                if_bus->Request(MST_ID_SW, ADDR_MEM_HW, OP_CALC, 1); // waste of a clock cycle but prevent early release of bus
+                if_bus->Request(MST_ID_SW, ADDR_MEM_HW, OP_CALC, 1, ROW_MJR, j, i); // waste of a clock cycle but prevent early release of bus
                 software_cycles += 2;
                 
                 while (!(if_bus->WaitForAcknowledge(MST_ID_SW)))
@@ -153,7 +153,7 @@ void Sw_component::do_sw_component()
                 #endif
                 if_bus->WriteData(0); // dummy data
 
-                wait(CLOCK_PERIOD * 10000);
+                wait(CLOCK_PERIOD * 100);
 
                 // wait(DELAY_SW_ADD); // k = 0
                 // for (k = j+1; k <= i; k++)

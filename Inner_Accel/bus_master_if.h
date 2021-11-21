@@ -21,7 +21,8 @@
 class bus_master_if : virtual public sc_interface
 {
     public:
-        virtual void Request(unsigned int mst_id, unsigned int addr, unsigned int op, unsigned int len, unsigned int indexing_mode = ROW_MJR) = 0;
+        virtual void Request(unsigned int mst_id, unsigned int addr, unsigned int op, unsigned int len, unsigned int indexing_mode = ROW_MJR, 
+                                unsigned int j_loop = LOOP_IDLE, unsigned int i_loop = LOOP_IDLE) = 0;
         virtual bool WaitForAcknowledge(unsigned int mst_id) = 0;
         virtual void ReadData(double &data) = 0;
         virtual void WriteData(double data) = 0;

@@ -39,7 +39,7 @@ class Memory: public sc_module
         sc_port<bus_minion_if> if_bus;  // port to shared bus (memory is always minion)
         
         vector<double> memData; // empty, no elements
-        unsigned int req_addr, req_op, req_len, req_indexing_mode; // received bus request details
+        unsigned int req_addr, req_op, req_len, req_indexing_mode, req_j_loop, req_i_loop; // received bus request details
         
         // thread for memory
         void do_memory() 
@@ -47,7 +47,7 @@ class Memory: public sc_module
             while (true)
             {
                 // listen to bus and wait
-                if_bus->Listen(req_addr, req_op, req_len, req_indexing_mode); // wait to receive bus request details
+                if_bus->Listen(req_addr, req_op, req_len, req_indexing_mode, req_j_loop, req_i_loop); // wait to receive bus request details
 
                 #ifdef DEBUG_MEM
                 cout << "[Memory] Listen() : got back req_addr = " << req_addr << ", req_op = " << req_op << ", req_len = " << req_len << endl;

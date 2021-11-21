@@ -37,10 +37,10 @@ Hw_component::Hw_component(sc_module_name name) : sc_module(name)
     // initialize "registers"
     for (unsigned int i = 0; i < matrix_size; i++)
     {
-        reg_Aik.push_back(0);
-        reg_Lkj.push_back(0);
+        reg_Aik.push_back(0.0);
+        reg_Lkj.push_back(0.0);
     }
-    reg_Lij = 0;
+    reg_Lij = 0.0;
     
     #ifdef DEBUG
     cout << "[Hw_component] End of hardware component constructor." << endl; 
@@ -56,7 +56,9 @@ void Hw_component::do_hw_component()
     while (true)
     {
         // minion part, wait for software call
-        if_bus_minion->Listen(req_addr, req_op, req_len, req_indexing_mode);
+        if_bus_minion->Listen(req_addr, req_op, req_len, req_indexing_mode, req_j_loop, req_i_loop);
+        col_number = req_j_loop;
+        row_number = req_i_loop;
 
         #ifdef DEBUG_HW
         cout << "[Hw_component] Listen() : got back req_addr = " << req_addr << ", req_op = " << req_op << ", req_len = " << req_len << endl;
@@ -78,7 +80,7 @@ void Hw_component::do_hw_component()
             #endif
 
             #ifdef DEBUG_HW
-            debug_log_file << "matrix_A_row_num = " << matrix_A_row_number << ", loop = " << num_loops << endl;
+            debug_log_file << "row_num = " << row_number << ", loop = " << num_loops << endl;
             #endif
             // master part, do calculations
             //      1. get data from memory and write into desktop (len = 2 rows of matrices A and B + 1 write!)
@@ -92,39 +94,46 @@ void Hw_component::do_hw_component()
             debug_log_file << "[Hw_component] Requesting row and column data, printing initial register states:" << endl;
             debug_log_file << "[Hw_component] reg_Aik = "; hw_print_register(reg_Aik);
             #endif
-            
+
+            data_len = row_number - (col_number + 1) + 1;
+
             unsigned int base_mem_addr_loop = ADDR_MEM_MEM + num_loops * matrix_size * matrix_size;
-            hw_master_read_data(base_mem_addr_loop + addrA + row_number * matrix_size, reg_Aik); // read A_ik
+            hw_master_read_data(base_mem_addr_loop + addrA + row_number * matrix_size + (col_number + 1), reg_Aik); // read A_ik
             hw_master_read_data(base_mem_addr_loop + addrL + row_number * matrix_size + col_number, reg_Lij); // read L_ij
-            hw_master_read_data(base_mem_addr_loop + addrL + row_number * matrix_size + col_number, reg_Lkj, COL_MJR); // read L_kj
+            hw_master_read_data(base_mem_addr_loop + addrL + (col_number + 1) * matrix_size + col_number, reg_Lkj, COL_MJR); // read L_kj
 
             #ifdef DEBUG_HW
             debug_log_file << "base_mem_addr_loop = " << base_mem_addr_loop << 
-                " addrA_eff = " << base_mem_addr_loop + addrA + matrix_A_row_number * matrix_size << 
-                " addrL_eff = " << base_mem_addr_loop + addrL + SOME_OFFSET << endl;
+                " addrA_eff = " << base_mem_addr_loop + addrA + row_number * matrix_size << 
+                " addrL_eff = " << base_mem_addr_loop + addrL + row_number * matrix_size + col_number << endl;
             debug_log_file << "[Hw_component] reg_Aik = "; hw_print_register(reg_Aik);
             #endif
 
             // 2. do calculations
-            for(int i = 0; i < row_number - (col_number + 1) + 1; i++){
+            for(int i = 0; i < data_len; i++){
                 reg_Aik[i] -= reg_Lij * reg_Lkj[i];
             }
 
             // 3. write finished data (row * column) to memory. matrix C is stored as row major
-            hw_master_write_data(base_mem_addr_loop + addrA + row_number * matrix_size, reg_Aik);
+            hw_master_write_data(base_mem_addr_loop + addrA + row_number * matrix_size + (col_number + 1), reg_Aik);
 
             // increment matrix row/column position and loop counters
-            row_number++;
-            if (row_number == matrix_size)
-            {
-                col_number++;
-                row_number = 0;
+            if(row_number + 1 == matrix_size){
+                if(col_number + 1 == matrix_size){
+                    num_loops++;
+                }
             }
-            if (col_number == matrix_size)
-            {
-                num_loops++;
-                col_number = 0;
-            }
+            // row_number++;
+            // if (row_number == matrix_size)
+            // {
+            //     col_number++;
+            //     row_number = 0;
+            // }
+            // if (col_number == matrix_size)
+            // {
+            //     num_loops++;
+            //     col_number = 0;
+            // }
         }
     }
 }
@@ -138,7 +147,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
     #ifdef DEBUG_HW
     debug_log_file << "[Hw_component] hw_master_read_data() : Requesting : MST_ID = " << MST_ID_HW << ", ADDR = " << addr <<", OP = OP_READ, len = " << matrix_size << endl;
     #endif
-    if_bus_master->Request(MST_ID_HW, addr, OP_READ, row_number - (col_number + 1) + 1, indexing_mode);
+    if_bus_master->Request(MST_ID_HW, addr, OP_READ, data_len, indexing_mode);
     
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
@@ -148,7 +157,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
         #endif
     }
     
-    for (unsigned int i = 0; i < matrix_size; i++ )
+    for (unsigned int i = 0; i < data_len; i++ )
     {
         double data = 0;
         if_bus_master->ReadData(data);
@@ -182,10 +191,6 @@ void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned 
     double data = 0;
     if_bus_master->ReadData(data);
     reg = data;
-
-    #ifdef DEBUG_HW
-    debug_log_file << "[Hw_component] hw_master_read_data() : Reading, i = " << i << endl;
-    #endif
 }
 
 /**
@@ -197,7 +202,7 @@ void Hw_component::hw_master_write_data(unsigned int addr, vector<double>& reg)
     #ifdef DEBUG_HW
     debug_log_file << "[Hw_component] hw_master_write_data() : Requesting : MST_ID = " << MST_ID_HW << ", ADDR = " << addr <<", OP = OP_WRITE, len = " << matrix_size << endl;
     #endif
-    if_bus_master->Request(MST_ID_HW, addr, OP_WRITE, matrix_size);
+    if_bus_master->Request(MST_ID_HW, addr, OP_WRITE, data_len);
     
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
@@ -207,7 +212,7 @@ void Hw_component::hw_master_write_data(unsigned int addr, vector<double>& reg)
         #endif
     }
     
-    for (unsigned int i = 0; i < matrix_size; i++ )
+    for (unsigned int i = 0; i < data_len; i++ )
     {
         if_bus_master->WriteData(reg[i]);
 

@@ -50,7 +50,8 @@ class Hw_component : public sc_module
         vector<double> reg_Lkj;
 
         // to listen to bus, need variables to store request details
-        unsigned int req_addr, req_op, req_len, req_indexing_mode;
+        unsigned int req_addr, req_op, req_len, req_indexing_mode, req_j_loop, req_i_loop;
+        unsigned int data_len;
 
         // constructor
         Hw_component(sc_module_name name);

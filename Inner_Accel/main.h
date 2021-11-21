@@ -55,6 +55,8 @@
 
 #define LEN_BUS_IDLE    0U              // shared bus idle state request length
 
+#define LOOP_IDLE       0U
+
 #define DATA_REUSE
 
 // software calculation time penalties in clock cycles
