@@ -96,13 +96,13 @@ class Memory: public sc_module
                         }
                         else if(req_indexing_mode == COL_MJR)
                         {
-                            for (unsigned int i = 0; i < req_len; i+=matrix_size)
+                            for (unsigned int i = 0; i < req_len; i++)
                             {
                                 // adjust passed address to within array dimensions
                                 #ifdef DEBUG_MEM
                                 debug_log_file << "[Memory] SendReadData : addr = " << req_addr << endl;
                                 #endif
-                                if_bus->SendReadData(memData[req_addr - ADDR_MEM_MEM + i]);
+                                if_bus->SendReadData(memData[req_addr - ADDR_MEM_MEM + i*matrix_size]);
                             }
                         }
                         else

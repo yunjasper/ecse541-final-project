@@ -83,7 +83,7 @@ void Sw_component::do_sw_component()
             wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); wait(DELAY_SW_MUL); // i++, compare, matrix_size * matrix_size
             software_cycles += 8;
 
-            if_bus->WriteData(0); // initialize Matrix C to all zeros
+            if_bus->WriteData(0.0); // initialize Matrix C to all zeros
             #ifdef DEBUG_SW
             cout << "[Sw_component] WriteData = 0, i = " << i << endl;
             debug_log_file << "[Sw_component] WriteData = 0, i = " << i << endl;
@@ -233,9 +233,9 @@ void Sw_component::sw_master_read_data(unsigned int addr, double& datum)
     
     if_bus->ReadData(datum);
 
-    #ifdef DEBUG_SW
-    debug_log_file << "[Sw_component] sw_master_read_data() : Reading, i = " << i << endl;
-    #endif
+    // #ifdef DEBUG_SW
+    // debug_log_file << "[Sw_component] sw_master_read_data() : Reading, i = " << i << endl;
+    // #endif
 
     // to avoid messing with bus timing, put this in bulk wait after read data is done
     wait(DELAY_SW_ADD);

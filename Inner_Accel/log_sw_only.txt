@@ -1,6 +1,6 @@
 ECSE 541: MPSoC Design, HW2 -- Software Only
 Software-Hardware Partitioned Matrix-Matrix Multiplication
-addrA = 0, addrL = 5000
-matrix_size = 5, loops = 1, mem_size = 5027
-[Memory] Input file too short! Initializing rest of memory to zero
+addrA = 0, addrL = 500
+matrix_size = 5, loops = 1, mem_size = 527
+[Memory] Input file too long! Stopped.
 [main] Starting simulation! 

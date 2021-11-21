@@ -15,6 +15,7 @@
 
 #include "systemc.h"
 #include "main.h"
+#include "hw_component.h"
 #include "sw_component.h"
 #include "memory.h"
 #include "shared_bus.h"
@@ -103,6 +104,7 @@ int sc_main(int argc, char* argv[])
     Shared_bus bus1("bus1");
     Oscillator osc1("osc1");
     Sw_component sw1("sw1");
+    Hw_component hw1("hw1");
     Memory mem1("mem1", mem_filename);
 
     sc_signal<sc_logic> global_clk;
@@ -110,16 +112,20 @@ int sc_main(int argc, char* argv[])
     // // connect bus ports of different modules
     sw1.if_bus(bus1);
     mem1.if_bus(bus1);
+    hw1.if_bus_minion(bus1);
+    hw1.if_bus_master(bus1);
 
     // // connect clock signal to every module
     osc1.clk(global_clk); // output to rest of bus
     sw1.Clk(global_clk);
+    hw1.Clk(global_clk);
     mem1.Clk(global_clk);
     bus1.Clk(global_clk);
 
     // do simulation
     cout << "[main] Starting simulation! " << endl;
     debug_log_file << "[main] Starting simulation! " << endl;
+    // sc_start();
     sc_start();
 
     cout << "[main] end of simulation" << endl;
@@ -128,11 +134,11 @@ int sc_main(int argc, char* argv[])
     double end_time = sc_time_stamp().to_seconds() * 1e9;
     cout << "[main] final simulation time: " << end_time << " ns" << endl;
     cout << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
-    cout << "[main] final memory contents at addrL of each loop printed to log_sw_only.txt." << endl;
-    cout << "[main] software total cycles counted = " << software_cycles << endl;
+    cout << "[main] Total counted software cycles = " << software_cycles << endl;
+    cout << "[main] final memory contents at addrC of each loop printed to log_part1.txt." << endl;
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
-    debug_log_file << "[main] software total cycles counted = " << software_cycles << endl;
+    debug_log_file << "[main] Total counted software cycles = " << software_cycles << endl;
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
     {

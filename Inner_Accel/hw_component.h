@@ -58,6 +58,6 @@ class Hw_component : public sc_module
         void hw_master_read_data(unsigned int addr, vector<double>& reg, unsigned int indexing_mode = ROW_MJR);
         void hw_master_read_data(unsigned int addr, double& reg, unsigned int indexing_mode = ROW_MJR);
         void hw_master_write_data(unsigned int addr, vector<double>& reg); // write array
-        void hw_master_write_data(unsigned int addr, doubledata); // write single
+        void hw_master_write_data(unsigned int addr, double data); // write single
         void hw_print_register(vector<double>& reg);
 };

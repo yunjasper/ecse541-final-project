@@ -69,7 +69,7 @@ void Hw_component::do_hw_component()
             
             // no data to receive since hardware will take over, so go to master part
             // but need to read a dummy data to satisfy bus
-            unsigned int dummyData = 0;
+            double dummyData = 0;
             if_bus_minion->ReceiveWriteData(dummyData);
 
             #ifdef DEBUG_MEM
@@ -132,7 +132,7 @@ void Hw_component::do_hw_component()
 /**
  * Reads array of data from bus into hardware component register.
  */
-void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, unsigned int indexing_mode = ROW_MJR)
+void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, unsigned int indexing_mode)
 {
     // request and wait
     #ifdef DEBUG_HW
@@ -150,7 +150,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
     
     for (unsigned int i = 0; i < matrix_size; i++ )
     {
-        unsigned int data = 0;
+        double data = 0;
         if_bus_master->ReadData(data);
         reg[i] = data;
 
@@ -163,7 +163,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
 /**
  * Reads single datum from bus into hardware component register.
  */
-void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned int indexing_mode = ROW_MJR)
+void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned int indexing_mode)
 {
     // request and wait
     #ifdef DEBUG_HW
@@ -179,7 +179,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned 
         #endif
     }
     
-    unsigned int data = 0;
+    double data = 0;
     if_bus_master->ReadData(data);
     reg = data;
 
