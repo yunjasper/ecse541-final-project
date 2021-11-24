@@ -18,5 +18,5 @@ for dim in range(1,10):
     np_memChol = np.array(memChol)
     np_ansMemChol = np.array(ansMemChol)
 
-    np.savetxt("mem_text_" + str(dim) + "x" + str(dim) + ".txt", np_memChol, delimiter=",", newline=",", fmt="%d")
-    np.savetxt("cholesky_mem_text_" + str(dim) + "x" + str(dim) + ".txt", np_ansMemChol, delimiter=",", newline=",", fmt="%d")
+    np.savetxt("mem_text_" + str(dim) + "x" + str(dim) + ".txt", np_memChol, delimiter=",", newline=" ", fmt="%d")
+    np.savetxt("cholesky_mem_text_" + str(dim) + "x" + str(dim) + ".txt", np_ansMemChol, delimiter=" ", newline=",", fmt="%f")
