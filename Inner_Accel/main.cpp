@@ -39,7 +39,7 @@ int sc_main(int argc, char* argv[])
 {
     char* mem_filename;
 
-    debug_log_file.open ("log_sw_only.txt", ofstream::trunc); // open in truncate mode, delete previous contents
+    debug_log_file.open ("inner_accel_log.txt", ofstream::trunc); // open in truncate mode, delete previous contents
 
     // print info about this program
     cout << "\n\nECSE 541: MPSoC Design, HW2 -- Software Only" << endl;
