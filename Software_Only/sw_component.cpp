@@ -38,13 +38,14 @@ void Sw_component::do_sw_component()
 {
     unsigned int n; 
     unsigned int i, j, k;
+    software_cycles += 4; // initialize n, i, j, k
 
     wait(DELAY_SW_ADD); // set n = 0
     software_cycles++;
     for (n = 0; n < loops; n++)
     {
         wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // n++, compare to loops
-        software_cycles += 2;
+        software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP;
 
         cout << "[Sw_component] loop = " << n + 1 << endl;
         #ifdef DEBUG_SW
@@ -58,7 +59,7 @@ void Sw_component::do_sw_component()
         debug_log_file << "[Sw_component] Requesting : MST_ID = " << MST_ID_SW << ", ADDR = " << ADDR_MEM_MEM + addrL <<", OP = OP_WRITE, len = " << matrix_size * matrix_size << endl;
         #endif
         wait(DELAY_SW_ADD * 2); wait(DELAY_SW_MUL * 3);
-        software_cycles += 20;
+        software_cycles += 2 * CYCLES_SW_ADD + 3 * CYCLES_SW_MUL;
 
         if_bus->Request(MST_ID_SW, ADDR_MEM_MEM + addrL + n * matrix_size * matrix_size, OP_WRITE, matrix_size * matrix_size); // one transaction
         
@@ -77,11 +78,11 @@ void Sw_component::do_sw_component()
         #endif
         
         wait(DELAY_SW_ADD); // i = 0
-        software_cycles++;
+        software_cycles += CYCLES_SW_ADD;
         for (i = 0; i < matrix_size * matrix_size; i++)
         {
             wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); wait(DELAY_SW_MUL); // i++, compare, matrix_size * matrix_size
-            software_cycles += 8;
+            software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP + CYCLES_SW_MUL;
 
             if_bus->WriteData(0); // initialize Matrix C to all zeros
             #ifdef DEBUG_SW
@@ -96,68 +97,76 @@ void Sw_component::do_sw_component()
         // vector<unsigned int> reg_A(matrix_size, 0); // size matrix_size, init to 0
         // vector<unsigned int> reg_B(matrix_size, 0); // in actual hardware, would be registers with fixed size that do not need init to zero
         double L_jj, A_jj, L_ij, A_ij, A_ik, L_ik, L_kj;
+        software_cycles += 7; // initialize/declare doubles
 
         wait(DELAY_SW_ADD); wait(DELAY_SW_MUL * 2); // add, 2 muls (mul is 2 operands only)
-        software_cycles += 13;
+        software_cycles += CYCLES_SW_ADD + 2 * CYCLES_SW_MUL;
         unsigned int base_mem_addr_loop = ADDR_MEM_MEM + n * matrix_size * matrix_size;
 
         wait(DELAY_SW_ADD); // j = 0
-        software_cycles++;
+        software_cycles += CYCLES_SW_ADD;
         for (j = 0; j < matrix_size; j++) // row number -- execs: matrix_size * loops, iters: matrix_size
         {
             wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // j++, compare
-            software_cycles += 2;
+            software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP;
 
+            software_cycles += 3 * CYCLES_SW_CMP + CYCLES_SW_MUL; // address calculation
             sw_master_read_data(base_mem_addr_loop + addrA + j * matrix_size + j, A_jj);
+            
             L_jj = sqrt(A_jj);
+            software_cycles += CYCLES_SW_SQRT;
 
+            software_cycles += 3 * CYCLES_SW_CMP + CYCLES_SW_MUL; // address calculation
             sw_master_write_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
             
             wait(DELAY_SW_ADD); // i = 0
-            software_cycles++;
+            software_cycles += CYCLES_SW_ADD;
             for (i = j+1; i < matrix_size; i++) // column number -- execs: matrix_size * matrix_size * loops, iters: matrix_size
             {
                 wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // i++, compare
-                software_cycles += 2;
+                software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP;
 
                 wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                software_cycles += 9;
+                software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                 sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + j, A_ij);
 
                 wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                software_cycles += 9;
+                software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                 sw_master_read_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
 
                 // Anotate this!!
                 L_ij = A_ij / L_jj;
+                software_cycles += CYCLES_SW_DIV; // division
 
                 wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                software_cycles += 9;
+                software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                 sw_master_write_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
 
                 wait(DELAY_SW_ADD); // k = 0
+                software_cycles += CYCLES_SW_ADD; // k = 0
                 for (k = j+1; k <= i; k++)
                 {
                     wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // k++, compare
-                    software_cycles += 2;
+                    software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP;
 
                     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
+                    software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                     sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
 
                     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
+                    software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                     sw_master_read_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
 
                     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
+                    software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                     sw_master_read_data(base_mem_addr_loop + addrL + k * matrix_size + j, L_kj);
                     
                     // Anotate this!
                     A_ik = A_ik - L_ij * L_kj;
+                    software_cycles += CYCLES_SW_ADD + CYCLES_SW_MUL;
                     
                     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                    software_cycles += 9;
+                    software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                     sw_master_write_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
                 }
             }

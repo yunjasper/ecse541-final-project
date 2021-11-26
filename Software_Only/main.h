@@ -53,9 +53,20 @@
 #define DATA_REUSE
 
 // software calculation time penalties in clock cycles
+// https://www.agner.org/optimize/instruction_tables.pdf
+// based on IceLake section latency values
 #define DELAY_SW_ADD    1*CLOCK_PERIOD  // add/sub/assign takes 1 clock cycle
-#define DELAY_SW_MUL    6*CLOCK_PERIOD  // mul/div takes 6 clock cycles
+#define DELAY_SW_MUL    4*CLOCK_PERIOD  // mul/div takes 3 clock cycles
 #define DELAY_SW_CMP    1*CLOCK_PERIOD  // cmp takes 1 clock cycle
+#define DELAY_SW_SQRT   21*CLOCK_PERIOD // tables say 14-21, we assume worst case
+#define DELAY_SW_DIV    16*CLOCK_PERIOD // tables say 14-16
+
+// re-copy as just numbers :)
+#define CYCLES_SW_ADD   1
+#define CYCLES_SW_MUL   4
+#define CYCLES_SW_CMP   1
+#define CYCLES_SW_SQRT  21
+#define CYCLES_SW_DIV   16
 
 // for debugging
 // #define DEBUG

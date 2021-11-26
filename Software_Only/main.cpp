@@ -3,9 +3,10 @@
  * main.cpp
  * --------
  * 
- * Main function to run all the other code for HW2.
+ * Main function to run all the other code for the final project,
+ * software only version.
  * 
- * Author: Jasper Yun (260651891)
+ * Author: Jasper Yun (260651891), Nicholas Dahdah, Oliver Miller
  * 
  * ECSE 541: Design of MPSoC
  * Fall 2021
@@ -41,10 +42,10 @@ int sc_main(int argc, char* argv[])
     debug_log_file.open ("software_only_log.txt", ofstream::trunc); // open in truncate mode, delete previous contents
 
     // print info about this program
-    cout << "\n\nECSE 541: MPSoC Design, HW2 -- Software Only" << endl;
-    cout << "Software-Hardware Partitioned Matrix-Matrix Multiplication" << endl;
-    debug_log_file << "ECSE 541: MPSoC Design, HW2 -- Software Only" << endl;
-    debug_log_file << "Software-Hardware Partitioned Matrix-Matrix Multiplication" << endl;
+    cout << "\n\nECSE 541: MPSoC Design, Final Project -- Software Only" << endl;
+    cout << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+    debug_log_file << "ECSE 541: MPSoC Design, Final Project -- Software Only" << endl;
+    debug_log_file << "Software-Hardware Partitioned Choleski Decomposition" << endl;
 
     // check CLI arguments
     if (argc != 2 && argc != 4 && argc != 5 && argc != 6)
