@@ -75,6 +75,13 @@
 #define CYCLES_SW_SQRT  21
 #define CYCLES_SW_DIV   16
 
+// re-copy as just numbers :)
+#define CYCLES_HW_ADD   1
+#define CYCLES_HW_MUL   1
+#define CYCLES_HW_CMP   1
+#define CYCLES_HW_SQRT  15 // ieee article?
+#define CYCLES_HW_DIV   10  // idkS
+
 // for debugging
 // #define DEBUG
 // #define DEBUG_SW

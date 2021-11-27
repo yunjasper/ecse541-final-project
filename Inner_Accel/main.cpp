@@ -32,6 +32,7 @@ unsigned int loops = LOOPS;
 unsigned int mem_size = MEM_SIZE;
 
 volatile unsigned int software_cycles = 0; // timing cycles for software
+volatile unsigned int hardware_cycles = 0; // timing cycles for hardware
 
 ofstream debug_log_file;
 
@@ -139,10 +140,12 @@ int sc_main(int argc, char* argv[])
     cout << "[main] final simulation time: " << end_time << " ns" << endl;
     cout << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     cout << "[main] Total counted software cycles = " << software_cycles << endl;
+    cout << "[main] Total counted hardware cycles = " << hardware_cycles << endl;
     cout << "[main] final memory contents at addrC of each loop printed to log_part1.txt." << endl;
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     debug_log_file << "[main] Total counted software cycles = " << software_cycles << endl;
+    debug_log_file << "[main] Total counted hardware cycles = " << hardware_cycles << endl;
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
     {
