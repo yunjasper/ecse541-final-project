@@ -118,8 +118,12 @@ void Hw_component::do_hw_component()
             hw_master_write_data(base_mem_addr_loop + addrA + row_number * matrix_size + (col_number + 1), reg_Aik);
 
             // increment matrix row/column position and loop counters
-            if(row_number + 1 == matrix_size){
-                if(col_number + 1 == matrix_size){
+            // cout << "row number: " << row_number << endl;
+            // cout << "col number: " << col_number << endl;
+            // cout << "matrix size: " << matrix_size << endl;
+            if(row_number == matrix_size - 1){
+                if(col_number == matrix_size - 2){
+                    // cout << "num_loops++" << endl;
                     num_loops++;
                 }
             }
