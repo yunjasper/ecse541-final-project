@@ -110,13 +110,13 @@ void Sw_component::do_sw_component()
             wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // j++, compare
             software_cycles += CYCLES_SW_ADD + CYCLES_SW_CMP;
 
-            software_cycles += 3 * CYCLES_SW_CMP + CYCLES_SW_MUL; // address calculation
+            software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL; // address calculation
             sw_master_read_data(base_mem_addr_loop + addrA + j * matrix_size + j, A_jj);
             
             L_jj = sqrt(A_jj);
             software_cycles += CYCLES_SW_SQRT;
 
-            software_cycles += 3 * CYCLES_SW_CMP + CYCLES_SW_MUL; // address calculation
+            software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL; // address calculation
             sw_master_write_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
             
             wait(DELAY_SW_ADD); // i = 0
@@ -134,7 +134,6 @@ void Sw_component::do_sw_component()
                 software_cycles += 3 * CYCLES_SW_ADD + CYCLES_SW_MUL;
                 sw_master_read_data(base_mem_addr_loop + addrL + j * matrix_size + j, L_jj);
 
-                // Anotate this!!
                 L_ij = A_ij / L_jj;
                 software_cycles += CYCLES_SW_DIV; // division
 
