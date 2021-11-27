@@ -121,23 +121,17 @@ void Hw_component::do_hw_component()
             // cout << "row number: " << row_number << endl;
             // cout << "col number: " << col_number << endl;
             // cout << "matrix size: " << matrix_size << endl;
+            Hw_done.write(SC_LOGIC_1);
+            wait(Clk.posedge_event());
+            wait(Clk.posedge_event());
+            Hw_done.write(SC_LOGIC_0);
+
             if(row_number == matrix_size - 1){
                 if(col_number == matrix_size - 2){
-                    // cout << "num_loops++" << endl;
+                    cout << "num_loops++" << endl;
                     num_loops++;
                 }
             }
-            // row_number++;
-            // if (row_number == matrix_size)
-            // {
-            //     col_number++;
-            //     row_number = 0;
-            // }
-            // if (col_number == matrix_size)
-            // {
-            //     num_loops++;
-            //     col_number = 0;
-            // }
         }
     }
 }

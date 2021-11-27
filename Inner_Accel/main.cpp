@@ -122,10 +122,14 @@ int sc_main(int argc, char* argv[])
     mem1.Clk(global_clk);
     bus1.Clk(global_clk);
 
+    // sync signal for hw and sw
+    sc_signal<sc_logic> global_hw_done;
+    hw1.Hw_done(global_hw_done);
+    sw1.Hw_done(global_hw_done);
+
     // do simulation
     cout << "[main] Starting simulation! " << endl;
     debug_log_file << "[main] Starting simulation! " << endl;
-    // sc_start();
     sc_start();
 
     cout << "[main] end of simulation" << endl;

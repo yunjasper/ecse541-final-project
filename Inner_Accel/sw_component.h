@@ -26,6 +26,7 @@ class Sw_component : public sc_module
 {
     public:
         sc_in<sc_logic> Clk;
+        sc_in<sc_logic> Hw_done;
         sc_port<bus_master_if> if_bus;  // port to access hardware via shared bus as master
 
         Sw_component(sc_module_name name); // constructor

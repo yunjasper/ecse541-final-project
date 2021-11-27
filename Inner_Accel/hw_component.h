@@ -34,6 +34,7 @@ class Hw_component : public sc_module
         sc_port<bus_master_if> if_bus_master; // port to access hardware via shared bus as master
         sc_port<bus_minion_if> if_bus_minion; // port to access hardware via shared bus as minion
         sc_in<sc_logic> Clk; // clock signal
+        sc_out<sc_logic> Hw_done;
 
         // variables to keep track of row/column to be mulitplying
         // when hardware responds to request, increment

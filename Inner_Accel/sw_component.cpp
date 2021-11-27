@@ -159,33 +159,8 @@ void Sw_component::do_sw_component()
                 #endif
                 if_bus->WriteData(0); // dummy data
 
-                wait(CLOCK_PERIOD * 100); // tune this
-
-                // wait(DELAY_SW_ADD); // k = 0
-                // for (k = j+1; k <= i; k++)
-                // {
-                //     wait(DELAY_SW_ADD); wait(DELAY_SW_CMP); // k++, compare
-                //     software_cycles += 2;
-
-                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                //     software_cycles += 9;
-                //     sw_master_read_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
-
-                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                //     software_cycles += 9;
-                //     sw_master_read_data(base_mem_addr_loop + addrL + i * matrix_size + j, L_ij);
-
-                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                //     software_cycles += 9;
-                //     sw_master_read_data(base_mem_addr_loop + addrL + k * matrix_size + j, L_kj);
-                    
-                //     // Anotate this!
-                //     A_ik = A_ik - L_ij * L_kj;
-                    
-                //     wait(DELAY_SW_ADD * 3); wait(DELAY_SW_MUL);
-                //     software_cycles += 9;
-                //     sw_master_write_data(base_mem_addr_loop + addrA + i * matrix_size + k, A_ik);
-                // }
+                // wait(CLOCK_PERIOD * 100); // tune this
+                wait(Hw_done.posedge_event());
             }
         }
     }
@@ -200,7 +175,7 @@ SC_HAS_PROCESS(Sw_component);
 Sw_component::Sw_component(sc_module_name name) : sc_module(name)
 {
     SC_THREAD(do_sw_component);
-    sensitive << Clk.pos(); // make sensitive to clock positive edges
+    sensitive << Clk.pos() << Hw_done.pos(); // make sensitive to clock positive edges
 }
 
 /**
