@@ -1,12 +1,12 @@
 import numpy as np
 
-# dim = 5
+max_num_loops = 200
 
-for dim in range(1,10):
+for dim in range(1,51):
     memChol = []
     ansMemChol = []
 
-    for i in range(200):
+    for i in range(max_num_loops):
         A = np.random.randint(low=1,high=100,size=dim*dim)
         AAT = (A.reshape((dim,dim)) @ A.reshape((dim,dim)).T).flatten()
         L = (np.linalg.cholesky(AAT.reshape(dim,dim))).flatten()

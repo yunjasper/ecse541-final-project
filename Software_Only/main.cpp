@@ -34,18 +34,24 @@ unsigned int mem_size = MEM_SIZE;
 volatile unsigned int software_cycles = 0; // timing cycles for software
 
 ofstream debug_log_file;
+ofstream performance_log_file;
 
 int sc_main(int argc, char* argv[])
 {
     char* mem_filename;
 
     debug_log_file.open ("software_only_log.txt", ofstream::trunc); // open in truncate mode, delete previous contents
+    performance_log_file.open("sw_performance_log.txt", ofstream::app); // will append instead of overwrite
 
     // print info about this program
     cout << "\n\nECSE 541: MPSoC Design, Final Project -- Software Only" << endl;
     cout << "Software-Hardware Partitioned Choleski Decomposition" << endl;
     debug_log_file << "ECSE 541: MPSoC Design, Final Project -- Software Only" << endl;
     debug_log_file << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+
+    // performance_log_file << "ECSE 541: MPSoC Design, Final Project -- Software Only" << endl;
+    // performance_log_file << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+    // performance_log_file << "Format: matrix_size, loops, total_software_cycles" << endl;
 
     // check CLI arguments
     if (argc != 2 && argc != 4 && argc != 5 && argc != 6)
@@ -61,10 +67,10 @@ int sc_main(int argc, char* argv[])
         addrL = stoi(argv[2]);
         addrA = stoi(argv[3]);
 
-        if (argc == 5)
+        if (argc >= 5)
             matrix_size = stoi(argv[4]);
         
-        if (argc == 6)
+        if (argc >= 6)
             matrix_size = stoi(argv[4]);
             loops = stoi(argv[5]);
     }
@@ -134,6 +140,10 @@ int sc_main(int argc, char* argv[])
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     debug_log_file << "[main] software total cycles counted = " << software_cycles << endl;
+    
+    // format: size, loops, cycles
+    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << endl; // just print the numbers, easier to parse that way :)
+    
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
     {

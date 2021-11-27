@@ -145,7 +145,6 @@ void Hw_component::do_hw_component()
 
             if(row_number == matrix_size - 1){
                 if(col_number == matrix_size - 2){
-                    cout << "num_loops++" << endl;
                     num_loops++;
                 }
             }
@@ -167,16 +166,22 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
+        hardware_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif
     }
     
+    hardware_cycles += CYCLES_HW_ADD; // i = 0
     for (unsigned int i = 0; i < data_len; i++ )
     {
+        hardware_cycles += CYCLES_HW_ADD + CYCLES_HW_CMP;
         double data = 0;
         if_bus_master->ReadData(data);
-        reg[i] = data;
+        
+        hardware_cycles += CYCLES_HW_ADD; // write data into reg[i]
+        reg[i] = data; 
+        
 
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_read_data() : Reading, i = " << i << endl;
@@ -198,12 +203,13 @@ void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned 
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
+        hardware_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif
     }
     
-    double data = 0;
+    double data = 0; // in actual hardware would just read the data into a reg, no cycle cost in hw
     if_bus_master->ReadData(data);
     reg = data;
 }
@@ -222,13 +228,16 @@ void Hw_component::hw_master_write_data(unsigned int addr, vector<double>& reg)
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
+        hardware_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_write_data() : Waiting for acknowledge from memory" << endl;
         #endif
     }
     
+    hardware_cycles += CYCLES_HW_ADD; // i = 0
     for (unsigned int i = 0; i < data_len; i++ )
     {
+        hardware_cycles += CYCLES_HW_ADD + CYCLES_HW_CMP + CYCLES_HW_ADD; // last add cycle for accessing reg[i] 
         if_bus_master->WriteData(reg[i]);
 
         #ifdef DEBUG_HW
@@ -251,6 +260,7 @@ void Hw_component::hw_master_write_data(unsigned int addr, double data)
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
+        hardware_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_write_data() : Waiting for acknowledge from memory" << endl;
         #endif

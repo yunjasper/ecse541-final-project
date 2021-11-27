@@ -35,18 +35,25 @@ volatile unsigned int software_cycles = 0; // timing cycles for software
 volatile unsigned int hardware_cycles = 0; // timing cycles for hardware
 
 ofstream debug_log_file;
+ofstream performance_log_file;
 
 int sc_main(int argc, char* argv[])
 {
     char* mem_filename;
 
     debug_log_file.open ("inner_accel_log.txt", ofstream::trunc); // open in truncate mode, delete previous contents
+    performance_log_file.open("hw_performance_log.txt", ofstream::app); // will append instead of overwrite
 
     // print info about this program
-    cout << "\n\nECSE 541: MPSoC Design, HW2 -- Software Only" << endl;
-    cout << "Software-Hardware Partitioned Matrix-Matrix Multiplication" << endl;
-    debug_log_file << "ECSE 541: MPSoC Design, HW2 -- Software Only" << endl;
-    debug_log_file << "Software-Hardware Partitioned Matrix-Matrix Multiplication" << endl;
+    cout << "\n\nECSE 541: MPSoC Design, Final Project -- Hardware-Software Partitioning" << endl;
+    cout << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+    debug_log_file << "\n\nECSE 541: MPSoC Design, Final Project -- Hardware-Software Partitioning" << endl;
+    debug_log_file << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+    
+    // performance_log_file << "\n\nECSE 541: MPSoC Design, Final Project -- Hardware-Software Partitioning" << endl;
+    // performance_log_file << "Software-Hardware Partitioned Choleski Decomposition" << endl;
+    // performance_log_file << "Format: matrix_size, loops, total_software_cycles, total_hardware_cycles" << endl;
+
 
     // check CLI arguments
     if (argc != 2 && argc != 4 && argc != 5 && argc != 6)
@@ -62,10 +69,10 @@ int sc_main(int argc, char* argv[])
         addrL = stoi(argv[2]);
         addrA = stoi(argv[3]);
 
-        if (argc == 5)
+        if (argc >= 5)
             matrix_size = stoi(argv[4]);
         
-        if (argc == 6)
+        if (argc >= 6)
             matrix_size = stoi(argv[4]);
             loops = stoi(argv[5]);
     }
@@ -141,11 +148,17 @@ int sc_main(int argc, char* argv[])
     cout << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     cout << "[main] Total counted software cycles = " << software_cycles << endl;
     cout << "[main] Total counted hardware cycles = " << hardware_cycles << endl;
-    cout << "[main] final memory contents at addrC of each loop printed to log_part1.txt." << endl;
+    cout << "[main] Total counted cycles = " << software_cycles + hardware_cycles << endl;
+    cout << "[main] final memory contents at addrC of each loop printed to inner_accel_log.txt." << endl;
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     debug_log_file << "[main] Total counted software cycles = " << software_cycles << endl;
     debug_log_file << "[main] Total counted hardware cycles = " << hardware_cycles << endl;
+    debug_log_file << "[main] Total counted cycles = " << software_cycles + hardware_cycles << endl;
+
+    // format: matrix_size, loops, total_software_cycles, total_hardware_cycles
+    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << ", " << hardware_cycles << endl; // just print the numbers, easier to parse that way :)
+
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
     {
