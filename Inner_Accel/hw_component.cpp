@@ -20,6 +20,7 @@
 SC_HAS_PROCESS(Hw_component);
 
 extern volatile unsigned int hardware_cycles;
+extern volatile unsigned int bus_cycles;
 
 // constructor
 Hw_component::Hw_component(sc_module_name name) : sc_module(name)
@@ -166,7 +167,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, vector<double>& reg, u
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        hardware_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif
@@ -203,7 +204,7 @@ void Hw_component::hw_master_read_data(unsigned int addr, double& reg, unsigned 
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        hardware_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif
@@ -228,7 +229,7 @@ void Hw_component::hw_master_write_data(unsigned int addr, vector<double>& reg)
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        hardware_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_write_data() : Waiting for acknowledge from memory" << endl;
         #endif
@@ -260,7 +261,7 @@ void Hw_component::hw_master_write_data(unsigned int addr, double data)
     while (!(if_bus_master->WaitForAcknowledge(MST_ID_HW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        hardware_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_HW
         debug_log_file << "[Hw_component] hw_master_write_data() : Waiting for acknowledge from memory" << endl;
         #endif

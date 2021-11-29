@@ -25,6 +25,7 @@ extern unsigned int addrA;
 extern unsigned int matrix_size;
 extern unsigned int loops;
 extern volatile unsigned int software_cycles;
+extern volatile unsigned int bus_cycles;
 
 /**
  * Performs the matrix-matrix multiplications
@@ -65,7 +66,7 @@ void Sw_component::do_sw_component()
         
         while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) // will wait until ack signal is received
         {
-            software_cycles++;
+            bus_cycles++;
             wait(Clk.posedge_event()); // wait for next positive clock edge
             #ifdef DEBUG_SW
             cout << "[Sw_component] Waiting for Acknowledge from memory..." << endl;
@@ -147,7 +148,7 @@ void Sw_component::do_sw_component()
                 while (!(if_bus->WaitForAcknowledge(MST_ID_SW)))
                 {
                     wait(Clk.posedge_event()); // needed otherwise loops forever here
-                    software_cycles++;
+                    bus_cycles++;
                     #ifdef DEBUG_SW
                     cout << "[Sw_component] Waiting for Acknowledge from hardware..." << endl;
                     debug_log_file << "[Sw_component] Waiting for Acknowledge from hardware...i = " << i << ", j = " << j << endl;
@@ -187,7 +188,7 @@ void Sw_component::sw_master_write_data(unsigned int addr, double data)
     while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) 
     {
         wait(Clk.posedge_event());
-        software_cycles++;
+        bus_cycles++;
     }
     if_bus->WriteData(data);
 }
@@ -206,7 +207,7 @@ void Sw_component::sw_master_read_data(unsigned int addr, double& datum)
     while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        software_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_SW
         debug_log_file << "[Sw_component] sw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif
@@ -237,7 +238,7 @@ void Sw_component::sw_master_read_data(unsigned int addr, vector<double>& reg)
     while (!(if_bus->WaitForAcknowledge(MST_ID_SW))) // blocking function, hangs
     {
         wait(Clk.posedge_event());
-        software_cycles++;
+        bus_cycles++;
         #ifdef DEBUG_SW
         debug_log_file << "[Sw_component] sw_master_read_data() : Waiting for acknowledge from memory" << endl;
         #endif

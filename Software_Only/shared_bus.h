@@ -22,6 +22,8 @@
 
 using namespace std;
 
+extern volatile unsigned int bus_cycles;
+
 // to keep track of the state of the bus
 // struct holds info about the requested transaction
 struct request
@@ -174,7 +176,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
             debug_log_file << "[Shared_bus] Request() : first positive clock edge" << endl;
             #endif
             wait(Clk.posedge_event());
-            software_cycles += 2;
+            bus_cycles += 2;
             #ifdef DEBUG_BUS
             debug_log_file << "[Shared_bus] Request() : second positive clock edge" << endl;
             #endif
@@ -232,7 +234,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         {
             wait(Clk.posedge_event()); // wait 2 full clock cycles
             wait(Clk.posedge_event());
-            software_cycles += 2;
+            bus_cycles += 2;
             
             // take data from minion and write it to the provided address
             if (len_data_sent < current_master.len) // from minion POV it's sent data
@@ -241,7 +243,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
                 while (data_queue.empty())
                 {
                     wait(Clk.posedge_event());
-                    software_cycles++;
+                    bus_cycles++;
                 }
                 
                 // pop values from FIFO queue and put into &data
@@ -272,7 +274,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         void WriteData(double data)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
-            software_cycles++;
+            bus_cycles++;
 
             // take data from master and put into FIFO queue
             if (len_data_received < current_master.len) // from minion POV
@@ -301,6 +303,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         void Listen(unsigned int &req_addr, unsigned int &req_op, unsigned int &req_len)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
+            bus_cycles++;
             // TODO: Listen() is a read instruction so need another clock wait?
             
             // get current state of bus
@@ -327,6 +330,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         void Acknowledge()
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
+            bus_cycles++;
             is_acknowledged = true;
         }
 
@@ -337,6 +341,7 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         {
             wait(Clk.posedge_event()); // wait 2 full clock cycles
             wait(Clk.posedge_event());
+            bus_cycles += 2;
             if (len_data_sent < current_master.len)
             {
                 data_queue.push(data);
@@ -353,10 +358,12 @@ class Shared_bus : public sc_module, public bus_master_if, public bus_minion_if
         void ReceiveWriteData(double &data)
         {
             wait(Clk.posedge_event()); // wait 1 full clock cycle
+            bus_cycles++;
             
             // check if queue is empty
             while (data_queue.empty())
             {
+                bus_cycles++;
                 wait(Clk.posedge_event());
             }
             // get data

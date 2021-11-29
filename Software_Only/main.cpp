@@ -32,6 +32,7 @@ unsigned int loops = LOOPS;
 unsigned int mem_size = MEM_SIZE;
 
 volatile unsigned int software_cycles = 0; // timing cycles for software
+volatile unsigned int bus_cycles = 0; // timing cycles for bus operations
 
 ofstream debug_log_file;
 ofstream performance_log_file;
@@ -137,12 +138,16 @@ int sc_main(int argc, char* argv[])
     cout << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     cout << "[main] final memory contents at addrL of each loop printed to log_sw_only.txt." << endl;
     cout << "[main] software total cycles counted = " << software_cycles << endl;
+    cout << "[main] bus total cycles counted = " << bus_cycles << endl;
+    cout << "[main] total cycles counted = " << bus_cycles + software_cycles << endl;
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     debug_log_file << "[main] software total cycles counted = " << software_cycles << endl;
+    debug_log_file << "[main] bus total cycles counted = " << bus_cycles << endl;
+    debug_log_file << "[main] total cycles counted = " << bus_cycles + software_cycles << endl;
     
-    // format: size, loops, cycles
-    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << endl; // just print the numbers, easier to parse that way :)
+    // format: size, loops, software cycles, bus cycles
+    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << ", " << bus_cycles << endl; // just print the numbers, easier to parse that way :)
     
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)

@@ -33,6 +33,7 @@ unsigned int mem_size = MEM_SIZE;
 
 volatile unsigned int software_cycles = 0; // timing cycles for software
 volatile unsigned int hardware_cycles = 0; // timing cycles for hardware
+volatile unsigned int bus_cycles = 0; // timing cycles for bus
 
 ofstream debug_log_file;
 ofstream performance_log_file;
@@ -153,11 +154,12 @@ int sc_main(int argc, char* argv[])
     debug_log_file << "[main] final simulation time: " << end_time << " ns" << endl;
     debug_log_file << "[main] total cycles: time / clock period = " << end_time / 6.67 << endl;
     debug_log_file << "[main] Total counted software cycles = " << software_cycles << endl;
+    debug_log_file << "[main] Total counted bus cycles = " << bus_cycles << endl;
     debug_log_file << "[main] Total counted hardware cycles = " << hardware_cycles << endl;
-    debug_log_file << "[main] Total counted cycles = " << software_cycles + hardware_cycles << endl;
+    debug_log_file << "[main] Total counted cycles = " << software_cycles + hardware_cycles + bus_cycles << endl;
 
-    // format: matrix_size, loops, total_software_cycles, total_hardware_cycles
-    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << ", " << hardware_cycles << endl; // just print the numbers, easier to parse that way :)
+    // format: matrix_size, loops, total_software_cycles, bus cycles, total_hardware_cycles
+    performance_log_file <<  matrix_size << ", " << loops << ", " << software_cycles << ", " << bus_cycles << ", " << hardware_cycles << endl; // just print the numbers, easier to parse that way :)
 
     // print final contents of memory
     for (unsigned int i = 0; i < loops; i++)
